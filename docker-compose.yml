@@ -1,0 +1,75 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: store_intel_db
+    environment:
+      POSTGRES_USER: purplle_user
+      POSTGRES_PASSWORD: purplle_password
+      POSTGRES_DB: store_intelligence
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U purplle_user -d store_intelligence"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: store_intel_base:latest
+    container_name: store_intel_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://purplle_user:purplle_password@db:5432/store_intelligence
+      - ENVIRONMENT=development
+    depends_on:
+      db:
+        condition: service_healthy
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: store_intel_base:latest
+    container_name: store_intel_dashboard
+    command: streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0
+    volumes:
+      - .:/app
+      - ../CCTV Footage:/app/CCTV Footage
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://web:8000
+    depends_on:
+      - web
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: store_intel_base:latest
+    container_name: store_intel_pipeline
+    command: python -u pipeline/run_pipeline.py
+    volumes:
+      - .:/app
+      - ../CCTV Footage:/app/CCTV Footage
+    environment:
+      - DATABASE_URL=postgresql://purplle_user:purplle_password@db:5432/store_intelligence
+      - API_URL=http://web:8000
+      - VIDEO_FILE=CAM 3.mp4
+    depends_on:
+      db:
+        condition: service_healthy
+      web:
+        condition: service_started
+
+volumes:
+  postgres_data:

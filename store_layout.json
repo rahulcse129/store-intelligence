@@ -1,0 +1,36 @@
+{
+  "store_id": "STORE_MUMBAI_01",
+  "location": "Mumbai flagship store",
+  "zones": [
+    {
+      "zone_id": "entry",
+      "zone_name": "Entrance Lobby",
+      "polygon_coordinates": [[0.0, 0.8], [0.3, 0.8], [0.3, 1.0], [0.0, 1.0]]
+    },
+    {
+      "zone_id": "exit",
+      "zone_name": "Exit Vestibule",
+      "polygon_coordinates": [[0.3, 0.8], [0.6, 0.8], [0.6, 1.0], [0.3, 1.0]]
+    },
+    {
+      "zone_id": "maybelline",
+      "zone_name": "Maybelline",
+      "polygon_coordinates": [[0.12, 0.75], [0.21, 0.75], [0.21, 1.0], [0.12, 1.0]]
+    },
+    {
+      "zone_id": "faces_canada",
+      "zone_name": "Faces Canada",
+      "polygon_coordinates": [[0.21, 0.75], [0.30, 0.75], [0.30, 1.0], [0.21, 1.0]]
+    },
+    {
+      "zone_id": "lakme_makeup",
+      "zone_name": "Lakme Makeup",
+      "polygon_coordinates": [[0.30, 0.75], [0.39, 0.75], [0.39, 1.0], [0.30, 1.0]]
+    },
+    {
+      "zone_id": "colorbar_sugar",
+      "zone_name": "Colorbar & Sugar",
+      "polygon_coordinates": [[0.39, 0.75], [0.48, 0.75], [0.48, 1.0], [0.39, 1.0]]
+    }
+  ]
+}

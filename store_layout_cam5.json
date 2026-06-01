@@ -1,0 +1,16 @@
+{
+  "store_id": "STORE_MUMBAI_01",
+  "location": "Mumbai flagship store - Camera 5 View",
+  "zones": [
+    {
+      "zone_id": "billing",
+      "zone_name": "Checkout Billing Counters",
+      "polygon_coordinates": [[0.0, 0.0], [0.6, 0.0], [0.6, 1.0], [0.0, 1.0]]
+    },
+    {
+      "zone_id": "accessories",
+      "zone_name": "Accessories Zone",
+      "polygon_coordinates": [[0.6, 0.0], [1.0, 0.0], [1.0, 1.0], [0.6, 1.0]]
+    }
+  ]
+}

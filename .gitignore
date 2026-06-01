@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# YOLO & Models
+*.pt
+*.onnx
+*.engine
+
+# Media & Videos (CCTV footage is 150MB+ per file, do not commit!)
+CCTV Footage/
+CCTV_Footage/
+*.mp4
+*.avi
+*.mkv
+
+# Environment & Credentials
+.env
+.env.*
+active_camera.txt
+
+# Databases
+*.db
+*.sqlite
+postgres_data/
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

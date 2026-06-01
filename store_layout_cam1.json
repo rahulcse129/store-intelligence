@@ -1,0 +1,46 @@
+{
+  "store_id": "STORE_MUMBAI_01",
+  "location": "Mumbai flagship store - Camera 1 View",
+  "zones": [
+    {
+      "zone_id": "eb_korean",
+      "zone_name": "EB Korean Skincare",
+      "polygon_coordinates": [[0.0, 0.0], [0.15, 0.0], [0.15, 0.3], [0.0, 0.3]]
+    },
+    {
+      "zone_id": "the_face_shop",
+      "zone_name": "The Face Shop",
+      "polygon_coordinates": [[0.15, 0.0], [0.3, 0.0], [0.3, 0.3], [0.15, 0.3]]
+    },
+    {
+      "zone_id": "good_vibes",
+      "zone_name": "Good Vibes",
+      "polygon_coordinates": [[0.3, 0.0], [0.45, 0.0], [0.45, 0.3], [0.3, 0.3]]
+    },
+    {
+      "zone_id": "dermdoc",
+      "zone_name": "DermDoc",
+      "polygon_coordinates": [[0.45, 0.0], [0.6, 0.0], [0.6, 0.3], [0.45, 0.3]]
+    },
+    {
+      "zone_id": "minimalist",
+      "zone_name": "Minimalist",
+      "polygon_coordinates": [[0.6, 0.0], [0.75, 0.0], [0.75, 0.3], [0.6, 0.3]]
+    },
+    {
+      "zone_id": "aqualogica",
+      "zone_name": "Aqualogica",
+      "polygon_coordinates": [[0.75, 0.0], [0.9, 0.0], [0.9, 0.3], [0.75, 0.3]]
+    },
+    {
+      "zone_id": "makeup_unit",
+      "zone_name": "Central Makeup Station",
+      "polygon_coordinates": [[0.7, 0.4], [1.0, 0.4], [1.0, 0.8], [0.7, 0.8]]
+    },
+    {
+      "zone_id": "fragrance_nail",
+      "zone_name": "Fragrance & Nails",
+      "polygon_coordinates": [[0.3, 0.5], [0.6, 0.5], [0.6, 1.0], [0.3, 1.0]]
+    }
+  ]
+}

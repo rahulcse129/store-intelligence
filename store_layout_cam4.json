@@ -1,0 +1,11 @@
+{
+  "store_id": "STORE_MUMBAI_01",
+  "location": "Mumbai flagship store - Camera 4 View",
+  "zones": [
+    {
+      "zone_id": "storeroom",
+      "zone_name": "Staff Storeroom & Stock",
+      "polygon_coordinates": [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]]
+    }
+  ]
+}

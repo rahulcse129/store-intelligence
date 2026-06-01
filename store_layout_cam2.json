@@ -1,0 +1,61 @@
+{
+  "store_id": "STORE_MUMBAI_01",
+  "location": "Mumbai flagship store - Camera 2 View",
+  "zones": [
+    {
+      "zone_id": "good_vibes",
+      "zone_name": "Good Vibes",
+      "polygon_coordinates": [[0.22, 0.0], [0.33, 0.0], [0.33, 0.25], [0.22, 0.25]]
+    },
+    {
+      "zone_id": "dermdoc",
+      "zone_name": "DermDoc",
+      "polygon_coordinates": [[0.33, 0.0], [0.44, 0.0], [0.44, 0.25], [0.33, 0.25]]
+    },
+    {
+      "zone_id": "minimalist",
+      "zone_name": "Minimalist",
+      "polygon_coordinates": [[0.44, 0.0], [0.55, 0.0], [0.55, 0.25], [0.44, 0.25]]
+    },
+    {
+      "zone_id": "aqualogica",
+      "zone_name": "Aqualogica",
+      "polygon_coordinates": [[0.55, 0.0], [0.66, 0.0], [0.66, 0.25], [0.55, 0.25]]
+    },
+    {
+      "zone_id": "makeup_unit",
+      "zone_name": "Central Makeup Station",
+      "polygon_coordinates": [[0.45, 0.35], [0.60, 0.35], [0.60, 0.65], [0.45, 0.65]]
+    },
+    {
+      "zone_id": "entry",
+      "zone_name": "Entrance Lobby",
+      "polygon_coordinates": [[0.0, 0.8], [0.3, 0.8], [0.3, 1.0], [0.0, 1.0]]
+    },
+    {
+      "zone_id": "exit",
+      "zone_name": "Exit Vestibule",
+      "polygon_coordinates": [[0.3, 0.8], [0.6, 0.8], [0.6, 1.0], [0.3, 1.0]]
+    },
+    {
+      "zone_id": "maybelline",
+      "zone_name": "Maybelline",
+      "polygon_coordinates": [[0.12, 0.75], [0.21, 0.75], [0.21, 1.0], [0.12, 1.0]]
+    },
+    {
+      "zone_id": "faces_canada",
+      "zone_name": "Faces Canada",
+      "polygon_coordinates": [[0.21, 0.75], [0.30, 0.75], [0.30, 1.0], [0.21, 1.0]]
+    },
+    {
+      "zone_id": "lakme_makeup",
+      "zone_name": "Lakme Makeup",
+      "polygon_coordinates": [[0.30, 0.75], [0.39, 0.75], [0.39, 1.0], [0.30, 1.0]]
+    },
+    {
+      "zone_id": "colorbar_sugar",
+      "zone_name": "Colorbar & Sugar",
+      "polygon_coordinates": [[0.39, 0.75], [0.48, 0.75], [0.48, 1.0], [0.39, 1.0]]
+    }
+  ]
+}
