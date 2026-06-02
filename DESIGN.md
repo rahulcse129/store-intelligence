@@ -1,17 +1,12 @@
 # System Architecture Design: Store Intelligence System
 
-This document outlines the end-to-end system design, pipeline mechanics, and architectural blueprints for the **Purplle Store Intelligence System**.
+This document outlines the end-to-end system design, spatial mathematics, database schemas, and architectural blueprints for the **Apex Retail Store Intelligence System**.
 
 ---
 
-## 1. Architectural Overview
+## 1. End-to-End System Blueprint
 
-The system is designed as a highly scalable, real-time edge-to-cloud intelligence platform consisting of four main decoupled service layers running inside a containerized environment:
-
-1. **AI Processing Pipeline (Edge/Ingestion)**: Runs OpenCV, YOLOv8, and custom tracking/Re-ID components to process CCTV video feeds. It translates raw pixel streams into structured behavioral JSON telemetry.
-2. **API Gateway (FastAPI Backend)**: Acts as the high-throughput ingestion endpoint (`/events/ingest`), validates schemas via Pydantic, applies deduplication/idempotency rules, and manages PostgreSQL transactions.
-3. **Database Layer (PostgreSQL)**: Stores normalized relational schemas for stores, zones, shopper sessions, transactions, and anomalies.
-4. **Analytics & Visualization Dashboard (Streamlit)**: Periodically polls the API for unified visitor metrics, conversion funnels, dwell-time heatmaps, and operational anomaly alerts.
+The architecture is designed as a decoupled, multi-process streaming platform running containerized edge-to-cloud components:
 
 ```mermaid
 sequenceDiagram
@@ -27,12 +22,11 @@ sequenceDiagram
     Cam->>Pipe: Streams raw H.264/MP4 frame stream
     Note over Pipe: YOLOv8 Bounding Box Detection<br/>ByteTrack/IoU Spatial Tracking
     Pipe->>Pipe: Color Histogram Re-ID Mapping
-    Pipe->>Pipe: HSV Uniform Color Staff Filtering
     Pipe->>Pipe: Point-in-Polygon Zone Collision Checks
     Pipe->>API: POST /events/ingest (Batch JSON telemetry)
     Note over API: Idempotency & Deduplication Checks
     API->>DB: INSERT/UPSERT records
-    Dash->>API: GET /stores/STORE_MUMBAI_01/metrics (Poll every 4s)
+    Dash->>API: GET /stores/STORE_BLR_002/metrics (Poll loop)
     API->>DB: Execute distinct count & funnel queries
     DB-->>API: Return rows
     API-->>Dash: Return structured JSON
@@ -41,55 +35,32 @@ sequenceDiagram
 
 ---
 
-## 2. Deep Dive: Ingestion Pipeline Mechanics
+## 2. Ingestion Pipeline & Computer Vision Mechanics
 
-### A. Spatial Bounding & Bounding Box Tracking
-1. **YOLOv8 Person Detection**: Every frame is processed to isolate `person` bounding boxes with confidence scores.
-2. **IoU Tracking & ByteTrack**: Bounding boxes are matched across frames using Intersection over Union (IoU) metrics, assigning stable local track IDs.
+### A. Detection Layer & Spatial Bounding Box Tracking
+*   **Object Detection (YOLOv8)**: The pipeline reads CCTV video frames (1080p, 15fps) and uses a pre-trained YOLOv8 model targeting class `0` (person) to generate bounding boxes $[X_{min}, Y_{min}, X_{max}, Y_{max}]$ with confidence scores.
+*   **Bipartite IoU Tracking**: Bounding boxes are associated across consecutive frames using Intersection over Union (IoU) scores. A bipartite matching solver pairs tracks to maintain consistent local track IDs.
 
-### B. Visitor Re-Identification (Re-ID)
-To handle occlusions, camera exit/re-entries, and lost tracks:
-* The pipeline generates **color histogram embeddings** from cropped person patches using OpenCV (`cv2.calcHist`).
-* When a track is lost and a new one starts, the ReID engine calculates the cosine similarity between the new person's embedding and the active registry.
-* If similarity exceeds the threshold (`similarity_threshold = 0.85`) within a 10-minute window, the system links the new track to the same global `visitor_id`, preventing duplicate visitor counts.
+### B. Point-in-Polygon (PIP) Zone Mapping
+To locate customers relative to physical retail counters (e.g., Skincare, Makeup, Billing) without using heavy external GIS libraries, the pipeline implements a native, Ray-Casting Point-in-Polygon (PIP) algorithm:
+1.  **Coordinate Normalization**: Bounding boxes are normalized relative to frame height and width:
+    $$x_n = \frac{x}{W}, \quad y_n = \frac{y}{H}$$
+2.  **Floor Contact Extraction**: To represent where the shopper's feet contact the floor, the system evaluates the bottom-center coordinate of the bounding box:
+    $$P_x = \frac{X_{1n} + X_{2n}}{2.0}, \quad P_y = Y_{2n}$$
+3.  **Even-Odd Rule**: The Ray-Casting algorithm projects a horizontal ray from $P(P_x, P_y)$ and counts intersections with the polygon edges defined in `store_layout_camN.json`. If the intersection count is odd, the coordinate lies inside the zone.
 
-### C. HSV Uniform Color Staff Filtering
-To prevent store employees from skewing customer metrics, the system filters out staff dynamically:
-* It crops the torso region of detected bounding boxes and converts the color space to **HSV (Hue, Saturation, Value)**.
-* It applies strict mask ranges to detect specific uniform dress codes (e.g., Purplle store staff black/purple shirts).
-* If the uniform pixel count exceeds a specific threshold, the visitor is classified as `is_staff = True`. Staff members are fully tracked for operational analytics (e.g., cashier queue dwell times) but excluded from store conversion funnels.
-
-### E. Point-in-Polygon (PIP) Zone Mapping
-To determine exactly which product section a shopper is browsing:
-* The coordinates of the bottom-center of the bounding box (representing where the customer's feet touch the floor) are extracted and normalized between `[0.0, 1.0]`.
-* The system runs a **Ray-Casting Point-in-Polygon (PIP) Algorithm** (Even-Odd Rule) against the 2D CAD polygons defined in `store_layout.json` to identify active zone collisions (e.g., `eb_korean`, `minimalist`, `makeup_unit`, `billing`).
+### C. Visitor Re-Identification (Re-ID) & Double-Counting Prevention
+Temporary occlusions (display racks, columns) or group crossings frequently split track trajectories, resulting in duplicate unique customer counts. The `ReIDEngine` resolves this:
+*   **Color Histogram Signatures**: BGR color histograms (8 bins per channel, 512 total dimensions) are extracted from cropped person patches.
+*   **Cosine Similarity**: When a track is lost and a new track is initialized nearby, the engine computes the cosine similarity between their color embeddings:
+    $$\text{Similarity}(A, B) = \frac{A \cdot B}{\|A\| \|B\|}$$
+*   **Temporal Association Gate**: If similarity exceeds a threshold ($\ge 0.85$) within a 10-minute sliding window, the new track is matched to the existing global `visitor_id`, preserving session continuity.
 
 ---
 
-## 3. API & Business Logic Layer
+## 3. Database Schema Design
 
-### A. Idempotency & Deduplication
-To guarantee absolute reliability across networks, the `/events/ingest` endpoint implements database-level idempotency:
-* Every telemetry event generated by the pipeline contains a unique UUID (`event_id`).
-* When ingested, the backend runs a check. If an `event_id` already exists in PostgreSQL, the record is discarded/skipped safely (HTTP 200/207) without throwing errors or corrupting duplicate analytics.
-
-### B. POS Transaction Correlation (Conversion Logic)
-Store conversion rate calculations require connecting offline CCTV shoppers to digital POS register sales:
-* When a sales receipt is posted via `/transactions`, the analytics service runs a spatial-temporal query:
-  $$\text{Correlation Rule: } \text{Visitor Dwells in Billing Zone} \cap \text{POS Sale within 5 Minutes}$$
-* If a non-staff visitor resided in the `billing` zone within 5 minutes prior to the receipt's timestamp, that visitor session is marked as `converted = True`.
-* This prevents double-counting and accurately measures the percentage of physical store entries that lead to purchases.
-
-### C. Dynamic Anomaly Alerts
-Anomalies are computed in real-time on-demand:
-1. **Queue Spikes (`QUEUE_SPIKE`)**: Triggers a `CRITICAL` or `WARN` alert if the number of unique customers dwelling in the `billing` checkout zone exceeds threshold limits (e.g., $>5$ active shoppers). Suggests opening additional registers.
-2. **Conversion Drops (`CONVERSION_DROP`)**: Triggers an alert if visitor volume remains high but sales conversion rates fall below normal thresholds.
-
----
-
-## 4. Database Schema Design
-
-The PostgreSQL relational schema is structured as follows:
+The normalized relational PostgreSQL schema supports fast analytical lookups, session history tracking, and transaction correlation:
 
 ```mermaid
 erDiagram
@@ -147,3 +118,24 @@ erDiagram
         string suggested_action
     }
 ```
+
+---
+
+## 4. API & Analytics Business Logic
+
+### A. Idempotent Event Ingestion
+CCTV edge pipelines can lose network connections and re-transmit batches of events, creating duplicated logs. The API gateway solves this:
+*   Every telemetry event has a unique `event_id` (UUID-v4) generated at the edge.
+*   The database schema enforces a `PRIMARY KEY` on `event_id`.
+*    Fast API catches Postgres unique-constraint exceptions silently and returns a `200 OK` or `207 Multi-Status`, discarding duplicate payloads without pipeline downtime or analytics corruption.
+
+### B. Spatial-Temporal POS Transaction Correlation
+Offline customer checkout events are correlated with digital sales transactions using a spatial-temporal window search:
+*   **Correlation Heuristic**: A customer session is marked as `converted = True` if they resided in the `billing` zone within a **5-minute sliding window** preceding a register receipt timestamp (`pos_transactions.csv`).
+*   **Calculation**:
+    $$\text{Conversion Rate} = \frac{\text{Unique Converted Customer Sessions}}{\text{Total Unique Customer Sessions}}$$
+
+### C. Live Operations Alerts (Operational Anomalies)
+The engine evaluates store behavior on-demand:
+1.  **Queue Spikes (`QUEUE_SPIKE`)**: Warns store management if more than 5 unique shoppers are dwelling inside the `billing` zone simultaneously.
+2.  **Dead Zones (`DEAD_ZONE`)**: Alerts staff if a primary cosmetic display records zero traffic during peak shopping hours.
