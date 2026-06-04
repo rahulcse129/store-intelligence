@@ -68,6 +68,13 @@ The API is fully containerized and production-ready:
 
 ---
 
+## 📄 Automated Evaluation Framework (JSONL Output)
+
+For automated grading and evaluation systems that do not run the API directly, the pipeline is configured to automatically append all emitted tracking data to a flat text file in the project root:
+*   `events.jsonl`: Contains all generated telemetry events matching the exact challenge schema. This file is dynamically populated during `docker compose up` and serves as a static dataset for detection accuracy analysis.
+
+---
+
 ## 📦 Project Directory Structure
 
 ```text
