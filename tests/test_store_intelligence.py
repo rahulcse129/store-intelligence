@@ -3,6 +3,13 @@
 # Targets: Empty Store, All Staff, Re-Entry, Duplicates, Malformed, Zero Sales, Queue Spike
 # Enforces >70% Coverage targets via in-memory SQLite transactions
 # ==============================================================================
+# PROMPT: "Write a complete pytest suite for a FastAPI backend that uses an in-memory SQLite database. 
+# Test the following edge cases: empty store periods, all-staff movement, re-entry prevention, duplicate event 
+# payload idempotency, malformed JSON structures, zero-sales checkout sessions, and queue spike anomaly detection."
+#
+# CHANGES MADE: I manually overridden the database setup fixture to mock the `get_db` dependency correctly using 
+# `app.dependency_overrides`. I also tuned the test data to perfectly match our specific event payload schema and zone IDs.
+# ==============================================================================
 
 import pytest
 import uuid

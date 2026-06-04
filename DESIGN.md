@@ -35,6 +35,14 @@ sequenceDiagram
 
 ---
 
+## AI-Assisted Decisions
+
+1. **Re-ID Model Architecture**: I originally prompted the LLM for the most accurate deep learning model for pedestrian re-identification (like OSNet or TorchReID). The AI suggested using OSNet for optimal lighting invariance. However, I overrode this suggestion because OSNet induced massive GPU inference latency. Instead, I chose to implement a lightweight OpenCV Color Histogram (BGR) backed by Cosine Similarity. While technically less invariant than OSNet, it meets our edge computing constraints and operates nearly instantaneously on CPUs.
+2. **Point-in-Polygon Selection**: I asked the LLM how to detect if a customer is standing inside a complex store zone. It initially suggested importing `Shapely` and using `polygon.contains()`. I agreed with the mathematical concept, but overrode the library choice to reduce dependency bloat. I instead wrote a native Python Ray-Casting algorithm (Even-Odd Rule), which executes flawlessly without heavy C++ geometry compilation requirements in our Docker image.
+3. **Database Selection for Funnel Analytics**: I prompted the LLM to choose between MongoDB and PostgreSQL for storing JSON events and computing funnels. The AI recommended PostgreSQL because of its robust `DISTINCT` aggregates and `jsonb` support. I fully agreed with this and implemented the API layer atop PostgreSQL, allowing us to offload heavy conversion math directly to the SQL engine.
+
+---
+
 ## 2. Ingestion Pipeline & Computer Vision Mechanics
 
 ### A. Detection Layer & Spatial Bounding Box Tracking

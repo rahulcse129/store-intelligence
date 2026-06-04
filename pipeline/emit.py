@@ -37,6 +37,17 @@ class EventEmitter:
             if response.status_code in [200, 207]:
                 result = response.json()
                 print(f"[EventEmitter] Ingested {result.get('success_count', 0)} / {len(events)} events successfully.")
+                
+                # Write to the JSONL evaluation log file
+                try:
+                    # Resolve to project root (works inside Docker or locally)
+                    log_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "events.jsonl")
+                    with open(log_path, "a") as f:
+                        for ev in events:
+                            f.write(json.dumps(ev) + "\n")
+                except Exception as log_err:
+                    print(f"[EventEmitter] Could not write to events.jsonl: {log_err}")
+                    
                 return True
             else:
                 print(f"[EventEmitter] API Ingestion failed with status {response.status_code}: {response.text}")
